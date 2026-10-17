@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#176b57">
+  <meta name="description" content="食べ歩きの記録とSNS投稿を管理するアプリ">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="stylesheet" href="./css/style.css">
+  <title>食べ歩きノート</title>
+</head>
+<body>
+  <header class="app-header">
+    <div>
+      <p class="eyebrow">FOOD WALK JOURNAL</p>
+      <h1>食べ歩きノート</h1>
+    </div>
+    <button id="newRecordTop" class="primary small">＋ 記録</button>
+  </header>
+
+  <main>
+    <section id="homeView" class="view active">
+      <div class="stats">
+        <article class="stat-card"><span>未投稿</span><strong id="pendingCount">0</strong><small>件</small></article>
+        <article class="stat-card"><span>登録件数</span><strong id="totalCount">0</strong><small>件</small></article>
+      </div>
+      <button id="newRecordMain" class="primary wide">＋ 食べ歩きを記録する</button>
+      <div class="section-heading">
+        <h2>最近の記録</h2>
+        <button class="text-button" data-go="list">すべて見る →</button>
+      </div>
+      <div id="recentRecords" class="record-list"></div>
+      <p id="homeEmpty" class="empty hidden">まだ記録がありません。食べ歩きを記録してみましょう。</p>
+    </section>
+
+    <section id="listView" class="view">
+      <h2>記録一覧</h2>
+      <label class="field">
+        <span>店名・料理・地域で検索</span>
+        <input id="searchInput" type="search" placeholder="例：松山、ラーメン">
+      </label>
+      <div class="filter-row">
+        <label class="field compact"><span>投稿状況</span>
+          <select id="statusFilter">
+            <option value="all">すべて</option>
+            <option value="pending">未投稿</option>
+            <option value="draft">投稿準備中</option>
+            <option value="posted">投稿済み</option>
+          </select>
+        </label>
+        <label class="field compact"><span>並び順</span>
+          <select id="sortOrder">
+            <option value="newest">訪問日が新しい順</option>
+            <option value="oldest">訪問日が古い順</option>
+          </select>
+        </label>
+      </div>
+      <div id="allRecords" class="record-list"></div>
+      <p id="listEmpty" class="empty hidden">条件に合う記録がありません。</p>
+    </section>
+
+    <section id="editView" class="view">
+      <div class="section-heading">
+        <h2 id="editHeading">新しい記録</h2>
+        <button id="cancelEdit" class="text-button">キャンセル</button>
+      </div>
+      <form id="recordForm">
+        <input id="recordId" type="hidden">
+        <label class="field"><span>訪問日 *</span><input id="visitDate" type="date" required></label>
+        <label class="field"><span>店名 *</span><input id="shopName" maxlength="120" required placeholder="例：中国料理 龍花"></label>
+        <label class="field"><span>地域・住所</span><input id="area" maxlength="160" placeholder="例：松山市和泉南"></label>
+        <label class="field"><span>注文した料理</span><input id="menuName" maxlength="160" placeholder="例：日替わりランチ"></label>
+        <label class="field"><span>価格（円）</span><input id="price" type="number" min="0" step="1" inputmode="numeric" placeholder="850"></label>
+
+        <fieldset class="checklist">
+          <legend>投稿前に確認する項目</legend>
+          <label><input type="checkbox" id="checkTaste"> 味・食感の感想を書いた</label>
+          <label><input type="checkbox" id="checkVolume"> ボリューム・量を書いた</label>
+          <label><input type="checkbox" id="checkAtmosphere"> 店内の雰囲気・サービスを書いた</label>
+          <label><input type="checkbox" id="checkPrice"> 価格を書いた</label>
+          <label><input type="checkbox" id="checkPhoto"> 写真を選んだ／写真不要</label>
+        </fieldset>
+
+        <label class="field"><span>味・食感</span><textarea id="tasteMemo" rows="2" placeholder="例：甘酢ダレがよく絡み、ご飯が進む味。"></textarea></label>
+        <label class="field"><span>ボリューム・量</span><textarea id="volumeMemo" rows="2" placeholder="例：ボリューム十分。"></textarea></label>
+        <label class="field"><span>店内の雰囲気・サービス</span><textarea id="atmosphereMemo" rows="2" placeholder="例：落ち着いた雰囲気。ランチにはコーヒー付き。"></textarea></label>
+        <label class="field"><span>自由メモ</span><textarea id="freeMemo" rows="3" placeholder="忘れないうちに気づいたことを自由に記録"></textarea></label>
+
+        <div class="field">
+          <span>写真（既存写真から選択）</span>
+          <input id="photoInput" type="file" accept="image/*">
+          <div id="photoPreviewWrap" class="photo-preview-wrap hidden">
+            <img id="photoPreview" alt="選択した写真のプレビュー">
+            <button type="button" id="removePhoto" class="text-button">写真を外す</button>
+          </div>
+          <small class="hint">写真はアプリ内に保存されます。大きな写真は端末の保存容量を多く使います。</small>
+        </div>
+
+        <label class="field"><span>投稿状況</span>
+          <select id="postStatus">
+            <option value="pending">未投稿</option>
+            <option value="draft">投稿準備中</option>
+            <option value="posted">投稿済み</option>
+          </select>
+        </label>
+        <label class="field"><span>SNSの種類（任意）</span>
+          <select id="snsType">
+            <option value="">未選択</option><option>X</option><option>Instagram</option><option>Facebook</option><option>その他</option>
+          </select>
+        </label>
+        <label class="field"><span>投稿日時（投稿済みの場合）</span><input id="postDate" type="datetime-local"></label>
+        <div class="button-row">
+          <button type="submit" class="primary wide">記録を保存</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="detailView" class="view">
+      <div class="section-heading">
+        <h2>記録の詳細</h2>
+        <button id="backToList" class="text-button">← 一覧へ</button>
+      </div>
+      <div id="recordDetail"></div>
+    </section>
+
+    <section id="postView" class="view">
+      <div class="section-heading">
+        <h2>SNS投稿文を作成</h2>
+        <button id="cancelPost" class="text-button">戻る</button>
+      </div>
+      <p class="hint">記録内容から文章を作成します。自由に編集してからコピーしてください。</p>
+      <label class="field"><span>投稿テンプレート</span>
+        <select id="templateSelect">
+          <option value="review">飲食店レビュー</option>
+          <option value="short">短めの投稿</option>
+        </select>
+      </label>
+      <label class="field"><span>投稿文</span><textarea id="postText" rows="14"></textarea></label>
+      <div class="button-row">
+        <button id="copyPost" class="primary wide">文章をコピー</button>
+        <button id="markPosted" class="secondary wide">投稿済みにする</button>
+      </div>
+      <p id="copyMessage" class="success-message hidden" role="status">コピーしました。</p>
+    </section>
+
+    <section id="settingsView" class="view">
+      <h2>設定・バックアップ</h2>
+      <article class="settings-card">
+        <h3>バックアップ</h3>
+        <p>記録と写真をJSONファイルに書き出します。スマホの故障やブラウザデータ消去に備え、定期的に保存してください。</p>
+        <button id="exportBackup" class="primary wide">バックアップを書き出す</button>
+        <label class="field file-import"><span>バックアップから復元</span><input id="importBackup" type="file" accept=".json,application/json"></label>
+        <small class="hint">復元すると、現在の記録はバックアップ内容に置き換わります。必要なら先に書き出してください。</small>
+      </article>
+      <article class="settings-card">
+        <h3>投稿テンプレート</h3>
+        <p>利用できる置換文字：{店名} {地域} {訪問日} {料理} {価格} {味} {ボリューム} {雰囲気} {メモ}</p>
+        <label class="field"><span>飲食店レビュー</span><textarea id="reviewTemplate" rows="8"></textarea></label>
+        <label class="field"><span>短めの投稿</span><textarea id="shortTemplate" rows="5"></textarea></label>
+        <button id="saveTemplates" class="primary wide">テンプレートを保存</button>
+      </article>
+      <article class="settings-card">
+        <h3>データ管理</h3>
+        <p>このアプリの記録は、このブラウザの保存領域に保存されます。他の端末とは自動共有されません。</p>
+        <button id="deleteAll" class="danger wide">すべての記録を削除</button>
+      </article>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="メインメニュー">
+    <button class="nav-item active" data-go="home"><span>⌂</span>ホーム</button>
+    <button class="nav-item" data-go="list"><span>☷</span>記録一覧</button>
+    <button class="nav-item nav-add" data-go="new"><span>＋</span>記録</button>
+    <button class="nav-item" data-go="post"><span>✎</span>投稿文</button>
+    <button class="nav-item" data-go="settings"><span>⚙</span>設定</button>
+  </nav>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="./js/database.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
